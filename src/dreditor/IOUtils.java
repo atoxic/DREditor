@@ -74,8 +74,13 @@ public class IOUtils
     
     public static void putInt(SeekableByteChannel b, int i) throws IOException
     {
+        putInt(b, i, ByteOrder.LITTLE_ENDIAN);
+    }
+    
+    public static void putInt(SeekableByteChannel b, int i, ByteOrder bo) throws IOException
+    {
         ByteBuffer tmp = ByteBuffer.allocate(4);
-        tmp.order(ByteOrder.LITTLE_ENDIAN);
+        tmp.order(bo);
         tmp.putInt(i);
         tmp.flip();
         b.write(tmp);

@@ -1,6 +1,5 @@
 package dreditor;
 
-import dreditor.gui.PrefsUtils;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
@@ -92,7 +91,7 @@ public class DREditor
                     StandardOpenOption.READ, 
                     StandardOpenOption.WRITE))
         {
-            // sceImposeSetLanguageMode fix: changes Home screne language and button order
+            // sceImposeSetLanguageMode fix: changes home screen language and button order
             eboot.position(0x65AC);
             eboot.write(ByteBuffer.wrap(new byte[]{
                 (byte)(config.HOME_SCREEN_LANG), (byte)0x00, (byte)0x50, (byte)0x24,
@@ -313,6 +312,74 @@ public class DREditor
         listener.run();
         copyFile(iso, UmdPAKFile.UMDIMAGE2);
         listener.run();
+    }
+    
+    private static void packToISO(File oldISOFile, File newISOFile) throws IOException
+    {
+        
+        try(SeekableByteChannel newISO = Files.newByteChannel(newISOFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            SeekableByteChannel oldISO = Files.newByteChannel(oldISOFile.toPath(), StandardOpenOption.READ);)
+        {
+            ByteBuffer header = ByteBuffer.allocate(0xE800);
+            oldISO.read(header);
+            header.flip();
+            newISO.write(header);
+            
+            ByteBuffer buf = ByteBuffer.allocate(0x800);
+            for(ISOFiles f : ISOFiles.values())
+            {
+                SeekableByteChannel fileSource = oldISO;
+                SeekableByteChannel transChan = null;
+                
+                // Get data
+                oldISO.position(f.recordLoc + 2);
+                int oldLBA = IOUtils.getInt(oldISO);
+                oldISO.position(oldISO.position() + 4);
+                int oldSize = IOUtils.getInt(oldISO);
+                
+                int newPos = Constants.round((int)newISO.position(), 0x800);
+                int newLBA = newPos / 0x800;
+                int newSize = oldSize;
+                
+                // Should we read from an external file instead?
+                if(f.checkTrans)
+                {
+                    File transFile = new File(workspaceTrans, f.path.substring(f.path.lastIndexOf('/') + 1));
+                    try
+                    {
+                        fileSource = transChan = Files.newByteChannel(transFile.toPath(), StandardOpenOption.READ);
+                        newSize = (int)transChan.size();
+                    }
+                    catch(IOException e)
+                    {
+                        transChan = null;
+                    }
+                }
+                
+                // Update LBAs
+                newISO.position(f.recordLoc + 2);
+                IOUtils.putInt(newISO, newLBA, ByteOrder.LITTLE_ENDIAN);
+                IOUtils.putInt(newISO, newLBA, ByteOrder.BIG_ENDIAN);
+                IOUtils.putInt(newISO, newSize, ByteOrder.LITTLE_ENDIAN);
+                IOUtils.putInt(newISO, newSize, ByteOrder.BIG_ENDIAN);
+                
+                // Write file to new ISO
+                newISO.position(newPos);
+                oldISO.position(oldLBA * 0x800);
+                for(int i = 0; i < oldSize; i += 0x800)
+                {
+                    fileSource.read(buf);
+                    buf.flip();
+                    newISO.write(buf);
+                    buf.flip();
+                }
+                buf.clear();
+                
+                // Closes external file
+                if(transChan != null)
+                    transChan.close();
+            }
+        }
     }
     
     private static void copyFile(UmdIsoReader iso, UmdPAKFile fileInfo) throws IOException
