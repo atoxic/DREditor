@@ -314,9 +314,12 @@ public class DREditor
         listener.run();
     }
     
-    private static void packToISO(File oldISOFile, File newISOFile) throws IOException
+    public static void packToISO(File oldISOFile, File newISOFile) throws IOException
     {
-        
+        packToISO(oldISOFile, newISOFile);
+    }
+    public static void packToISO(File oldISOFile, File newISOFile, Runnable listener) throws IOException
+    {
         try(SeekableByteChannel newISO = Files.newByteChannel(newISOFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             SeekableByteChannel oldISO = Files.newByteChannel(oldISOFile.toPath(), StandardOpenOption.READ);)
         {
@@ -378,6 +381,9 @@ public class DREditor
                 // Closes external file
                 if(transChan != null)
                     transChan.close();
+                
+                if(listener != null)
+                    listener.run();
             }
         }
     }

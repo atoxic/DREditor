@@ -42,18 +42,22 @@ public class GUI extends javax.swing.JFrame
         postInitUnpackFiles();
         postInitSettings();
         
-        PrefsUtils.registerWindow("main", this, true);
+        PrefsUtils.registerWindow("main", this, false);
         SwingUtilities.invokeLater(new Runnable()
         {
             @Override
             public void run()
             {
-                // Set up file chooser
+                // Set up file choosers
                 workspaceChooser.setSelectedFile(DREditor.workspace);
                 workspaceField.setText(DREditor.workspace.getAbsolutePath());
                 
-                // Set up settings
-                loadSettings();
+                String iso = PrefsUtils.PREFS.get("iso", null);
+                if(iso != null)
+                {
+                    isoChooser.setSelectedFile(new File(iso));
+                    isoField.setText(iso);
+                }
             }
         });
     }
@@ -167,6 +171,29 @@ public class GUI extends javax.swing.JFrame
         buildComments.getDocument().addDocumentListener(dl);
         settingsDialog.pack();
         PrefsUtils.registerWindow("settings", settingsDialog, false);
+        
+        
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // Set up settings
+                loadSettings();
+            }
+        });
+    }
+    
+    private static boolean checkISOFile(File f)
+    {
+        return(f != null && f.exists() && f.isFile());
+    }
+    
+    private File getISOFile()
+    {
+        if(!checkISOFile(isoChooser.getSelectedFile()))
+            isoChooser.showOpenDialog(this);
+        return(checkISOFile(isoChooser.getSelectedFile()) ? isoChooser.getSelectedFile() : null);
     }
     
     private static void setupModel(DefaultTableModel model)
@@ -439,21 +466,30 @@ public class GUI extends javax.swing.JFrame
         unpackFromISO = new javax.swing.JButton();
         unpackLINFile = new javax.swing.JButton();
         pack = new javax.swing.JButton();
+        buildISO = new javax.swing.JButton();
         toolsPanel = new javax.swing.JPanel();
         textPreview = new javax.swing.JButton();
+        isoLabel = new javax.swing.JLabel();
+        isoField = new javax.swing.JTextField();
+        isoBrowse = new javax.swing.JButton();
 
         workspaceChooser.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("dreditor/gui/Bundle"); // NOI18N
         workspaceChooser.setDialogTitle(bundle.getString("GUI.workspaceChooser.dialogTitle")); // NOI18N
         workspaceChooser.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
-        workspaceChooser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileChosen(evt);
+        workspaceChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                workspaceChooserPropertyChange(evt);
             }
         });
 
         isoChooser.setDialogTitle(bundle.getString("GUI.isoChooser.dialogTitle")); // NOI18N
         isoChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("UMD ISO File", "iso"));
+        isoChooser.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                isoChooserPropertyChange(evt);
+            }
+        });
 
         settingsDialog.setTitle(bundle.getString("GUI.settingsDialog.title")); // NOI18N
         settingsDialog.setLocationByPlatform(true);
@@ -962,11 +998,21 @@ public class GUI extends javax.swing.JFrame
             }
         });
 
+        buildISO.setText(bundle.getString("GUI.buildISO.text")); // NOI18N
+        buildISO.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buildISOActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout actionsPanelLayout = new javax.swing.GroupLayout(actionsPanel);
         actionsPanel.setLayout(actionsPanelLayout);
         actionsPanelLayout.setHorizontalGroup(
             actionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(actionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(buildISO, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
             .addGroup(actionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(actionsPanelLayout.createSequentialGroup()
                     .addContainerGap()
@@ -978,7 +1024,10 @@ public class GUI extends javax.swing.JFrame
         );
         actionsPanelLayout.setVerticalGroup(
             actionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 101, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, actionsPanelLayout.createSequentialGroup()
+                .addContainerGap(96, Short.MAX_VALUE)
+                .addComponent(buildISO)
+                .addContainerGap())
             .addGroup(actionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(actionsPanelLayout.createSequentialGroup()
                     .addGap(9, 9, 9)
@@ -1005,7 +1054,7 @@ public class GUI extends javax.swing.JFrame
             toolsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(toolsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(textPreview, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(textPreview, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                 .addContainerGap())
         );
         toolsPanelLayout.setVerticalGroup(
@@ -1015,6 +1064,18 @@ public class GUI extends javax.swing.JFrame
                 .addComponent(textPreview)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        isoLabel.setText(bundle.getString("GUI.isoLabel.text")); // NOI18N
+
+        isoField.setEditable(false);
+        isoField.setText(bundle.getString("GUI.isoField.text")); // NOI18N
+
+        isoBrowse.setText(bundle.getString("GUI.isoBrowse.text")); // NOI18N
+        isoBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isoBrowseActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1026,15 +1087,21 @@ public class GUI extends javax.swing.JFrame
                     .addComponent(toolsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(actionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(workspaceLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(workspaceField, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browse))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(statusLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(statusBar)))
+                        .addComponent(statusBar))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(isoLabel)
+                            .addComponent(workspaceLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(isoField)
+                            .addComponent(workspaceField))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(browse)
+                            .addComponent(isoBrowse))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -1042,10 +1109,15 @@ public class GUI extends javax.swing.JFrame
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(isoLabel)
+                    .addComponent(isoField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(isoBrowse))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(workspaceLabel)
                     .addComponent(workspaceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browse))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(actionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(toolsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1061,23 +1133,14 @@ public class GUI extends javax.swing.JFrame
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fileChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileChosen
-        if(evt.getActionCommand().equals(JFileChooser.APPROVE_SELECTION))
-        {
-            workspaceField.setText(workspaceChooser.getSelectedFile().getAbsolutePath());
-            DREditor.setWorkspace(workspaceChooser.getSelectedFile());
-            PrefsUtils.PREFS.put("dir", workspaceChooser.getSelectedFile().getAbsolutePath());
-            
-            checkWorkspace();
-        }
-    }//GEN-LAST:event_fileChosen
-
     private void browseButtonClicked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonClicked
         workspaceChooser.showSaveDialog(this);
     }//GEN-LAST:event_browseButtonClicked
 
     private void unpackFromISOActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unpackFromISOActionPerformed
-        if(isoChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+        final File isoFile = getISOFile();
+        
+        if(isoFile != null)
         {
             final ProgressMonitor progressMonitor = 
                 new ProgressMonitor(this,
@@ -1097,11 +1160,13 @@ public class GUI extends javax.swing.JFrame
                             @Override
                             public void run()
                             {
+                                if(progressMonitor.isCanceled())
+                                    throw new RuntimeException("Canceled");
                                 setProgress(progressMonitor, ++progress);
                             }
                         };
                         
-                        DREditor.unpackFromISO(isoChooser.getSelectedFile(), increment);
+                        DREditor.unpackFromISO(isoFile, increment);
                         setStatus(GUIUtils.BUNDLE.getString("GUI.finishedUnpacking"));
                         
                         checkWorkspace();
@@ -1174,12 +1239,13 @@ public class GUI extends javax.swing.JFrame
                             @Override
                             public void run()
                             {
+                                if(progressMonitor.isCanceled())
+                                    throw new RuntimeException("Canceled");
                                 setProgress(progressMonitor, ++progress);
                             }
                         };
                         
                         DREditor.prepareEBOOT(config);
-                        
                         if(config.PACK_UMDIMAGE)
                             DREditor.pack(config, UmdPAKFile.UMDIMAGE, increment);
                         if(config.PACK_UMDIMAGE2)
@@ -1295,7 +1361,10 @@ public class GUI extends javax.swing.JFrame
                         if((Boolean)umdimageModel.getValueAt(i, 0))
                         {
                             if(progressMonitor.isCanceled())
+                            {
+                                setStatus("Canceled");
                                 return;
+                            }
                             DREditor.unpack(config, UmdPAKFile.UMDIMAGE, i);
                             setProgress(progressMonitor, ++progress);
                         }
@@ -1305,7 +1374,10 @@ public class GUI extends javax.swing.JFrame
                         if((Boolean)umdimage2Model.getValueAt(i, 0))
                         {
                             if(progressMonitor.isCanceled())
+                            {
+                                setStatus("Canceled");
                                 return;
+                            }
                             DREditor.unpack(config, UmdPAKFile.UMDIMAGE2, i);
                             setProgress(progressMonitor, ++progress);
                         }
@@ -1334,6 +1406,10 @@ public class GUI extends javax.swing.JFrame
                 {
                     setStatus(GUIUtils.BUNDLE.getString("Error.JSONException"));
                     GUIUtils.error(GUIUtils.BUNDLE.getString("Error.JSONException"));
+                }
+                catch(RuntimeException e)
+                {
+                    setStatus(e.getMessage());
                 }
                 finally
                 {
@@ -1372,6 +1448,84 @@ public class GUI extends javax.swing.JFrame
     private void textPVCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textPVCloseActionPerformed
         textPVDialog.setVisible(false);
     }//GEN-LAST:event_textPVCloseActionPerformed
+
+    private void workspaceChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_workspaceChooserPropertyChange
+        workspaceField.setText(workspaceChooser.getSelectedFile().getAbsolutePath());
+        DREditor.setWorkspace(workspaceChooser.getSelectedFile());
+        PrefsUtils.PREFS.put("dir", workspaceChooser.getSelectedFile().getAbsolutePath());
+
+        checkWorkspace();
+    }//GEN-LAST:event_workspaceChooserPropertyChange
+
+    private void isoChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_isoChooserPropertyChange
+        if(isoChooser.getSelectedFile() != null)
+        {
+            isoField.setText(isoChooser.getSelectedFile().getAbsolutePath());
+            PrefsUtils.PREFS.put("iso", isoChooser.getSelectedFile().getAbsolutePath());
+        }
+    }//GEN-LAST:event_isoChooserPropertyChange
+
+    private void isoBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isoBrowseActionPerformed
+        isoChooser.showOpenDialog(this);
+    }//GEN-LAST:event_isoBrowseActionPerformed
+
+    private void buildISOActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildISOActionPerformed
+        final File isoFile = getISOFile();
+        
+        if(isoFile != null)
+        {
+            final ProgressMonitor progressMonitor = 
+                new ProgressMonitor(this,
+                    "Building ISO...", "", 0, ISOFiles.values().length);
+            statusBar.setText(GUIUtils.BUNDLE.getString("GUI.buildingISO"));
+            new Thread()
+            {
+                int progress = 0;
+                
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        Runnable increment = new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if(progressMonitor.isCanceled())
+                                    throw new RuntimeException("Canceled");
+                                setProgress(progressMonitor, ++progress);
+                            }
+                        };
+                        
+                        DREditor.packToISO(isoFile, new File(DREditor.workspace, "build.iso"), increment);
+                        
+                        setStatus("Building complete!");
+                    }
+                    catch(IOException ioe)
+                    {
+                        setStatus(GUIUtils.BUNDLE.getString("Error.IOException"));
+                        GUIUtils.error(GUIUtils.BUNDLE.getString("Error.IOException"));
+                    }
+                    catch(RuntimeException e)
+                    {
+                        setStatus(e.getMessage());
+                    }
+                    finally
+                    {
+                        SwingUtilities.invokeLater(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                progressMonitor.close();
+                            }
+                        });
+                    }
+                }
+            }.start();
+        }
+    }//GEN-LAST:event_buildISOActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1419,6 +1573,7 @@ public class GUI extends javax.swing.JFrame
     private javax.swing.JButton browse;
     private javax.swing.JTextArea buildAuthors;
     private javax.swing.JTextArea buildComments;
+    private javax.swing.JButton buildISO;
     private javax.swing.JPanel buildPVPanel;
     private javax.swing.JCheckBox buildScreen;
     private javax.swing.JTextField buildVersion;
@@ -1429,7 +1584,10 @@ public class GUI extends javax.swing.JFrame
     private javax.swing.JCheckBox convertGIM;
     private javax.swing.ButtonGroup convertGroup;
     private javax.swing.JLabel filesLabel;
+    private javax.swing.JButton isoBrowse;
     private javax.swing.JFileChooser isoChooser;
+    private javax.swing.JTextField isoField;
+    private javax.swing.JLabel isoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
