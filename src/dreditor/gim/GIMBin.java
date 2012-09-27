@@ -39,8 +39,12 @@ public class GIMBin implements BinPart
     }
     public GIMBin(String root, String filename, GIMInfo _info) throws IOException
     {
+        this(DREditor.workspaceSrc, root, filename, _info);
+    }
+    public GIMBin(File dir, String root, String filename, GIMInfo _info) throws IOException
+    {
         info = _info;
-        img = ImageIO.read(new File(new File(DREditor.workspaceSrc, root), filename));
+        img = ImageIO.read(new File(new File(dir, root), filename));
     }
     
     public GIMInfo getInfo()

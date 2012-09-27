@@ -24,7 +24,7 @@ import dreditor.gui.*;
  */
 public class DREditor
 {
-    public static File workspace, workspaceRaw, rawEBOOT, workspaceSrc, workspaceTrans;
+    public static File workspace, workspaceRaw, rawEBOOT, workspaceOrig, workspaceSrc, workspaceTrans;
     
     public final static Charset scriptCharset = Charset.forName("UTF-8");
     
@@ -244,6 +244,7 @@ public class DREditor
         workspace = _workspace;
         workspaceRaw = new File(workspace, "raw");
         rawEBOOT = new File(workspaceRaw, "EBOOT.BIN");
+        workspaceOrig = new File(workspace, "orig");
         workspaceSrc = new File(workspace, "src");
         workspaceTrans = new File(workspace, "trans");
     }

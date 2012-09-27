@@ -30,7 +30,11 @@ public class BinBytes implements BinPart
     }
     public BinBytes(String root, String filename) throws IOException
     {
-        this(Files.readAllBytes(new File(new File(DREditor.workspaceSrc, root), filename).toPath()));
+        this(DREditor.workspaceSrc, root, filename);
+    }
+    public BinBytes(File dir, String root, String filename) throws IOException
+    {
+        this(Files.readAllBytes(new File(new File(dir, root), filename).toPath()));
     }
     public static BinBytes create(int[] _bytes)
     {

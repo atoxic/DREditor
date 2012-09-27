@@ -897,6 +897,7 @@ public class GUI extends javax.swing.JFrame
         );
 
         textPVDialog.setTitle(bundle.getString("GUI.textPVDialog.title")); // NOI18N
+        textPVDialog.setModal(true);
         textPVDialog.setResizable(false);
 
         textPVPanel.setBackground(new java.awt.Color(0, 0, 0));
@@ -1054,7 +1055,7 @@ public class GUI extends javax.swing.JFrame
             toolsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(toolsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(textPreview, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                .addComponent(textPreview, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
                 .addContainerGap())
         );
         toolsPanelLayout.setVerticalGroup(
@@ -1265,15 +1266,18 @@ public class GUI extends javax.swing.JFrame
                     {
                         setStatus(GUIUtils.BUNDLE.getString("Error.IOException"));
                         GUIUtils.error(GUIUtils.BUNDLE.getString("Error.IOException"));
+                        ioe.printStackTrace();
                     }
                     catch(InvalidTOCException ite)
                     {
                         setStatus(GUIUtils.BUNDLE.getString("Error.InvalidTOCException"));
                         GUIUtils.error(GUIUtils.BUNDLE.getString("Error.InvalidTOCException"));
+                        ite.printStackTrace();
                     }
                     catch(RuntimeException e)
                     {
                         setStatus(e.getMessage());
+                        e.printStackTrace();
                     }
                     finally
                     {

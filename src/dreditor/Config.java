@@ -33,4 +33,9 @@ public class Config
     {
         return(BUTTON_ORDER_SWITCHED ? "X" : "O");
     }
+    
+    public String getCancelButton()
+    {
+        return(BUTTON_ORDER_SWITCHED ? "O" : "X");
+    }
 }

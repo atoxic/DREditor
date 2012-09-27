@@ -278,11 +278,35 @@ public class BinFactory
         sb.append("importPackage(Packages.dreditor);\n");
         sb.append("importPackage(Packages.dreditor.lin);\n");
         sb.append("importPackage(Packages.dreditor.gim);\n");
-        sb.append("function load(s){ return(new BinBytes(\"").append(ID).append("\", s)); }\n");
-        sb.append("function loadGIM(s, info){ return(new GIMBin(\"").append(ID).append("\", s, info)); }\n\n");
+        sb.append("function load(s){ return(BinFactory.load(\"").append(ID).append("\", s)); }\n");
+        sb.append("function loadGIM(s, info){ return(BinFactory.loadGIM(\"").append(ID).append("\", s, info)); }\n\n");
         sb.append(new String(bytes, DREditor.scriptCharset));
         sb.append(String.format("%s();\n", ID));
         return(importFromJS(config, sb.toString()));
+    }
+    
+    public static BinBytes load(String ID, String file) throws IOException
+    {
+        try
+        {
+            return(new BinBytes(ID, file));
+        }
+        catch(IOException ioe)
+        {
+            return(new BinBytes(DREditor.workspaceOrig, ID, file));
+        }
+    }
+    
+    public static GIMBin loadGIM(String ID, String file, GIMInfo info) throws IOException
+    {
+        try
+        {
+            return(new GIMBin(ID, file, info));
+        }
+        catch(IOException ioe)
+        {
+            return(new GIMBin(DREditor.workspaceOrig, ID, file, info));
+        }
     }
     
     private static BinPart importFromJS(Config config, String src) throws ScriptException
