@@ -96,6 +96,6 @@ public class BinBytes implements BinPart
                     StandardOpenOption.CREATE, 
                     StandardOpenOption.TRUNCATE_EXISTING);
         
-        return(String.format("load(\"%s\")", ID + "." + ext));
+        return(String.format("loadBin(\"%s\")", ID + "." + ext));
     }
 }

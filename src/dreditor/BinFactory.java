@@ -278,14 +278,16 @@ public class BinFactory
         sb.append("importPackage(Packages.dreditor);\n");
         sb.append("importPackage(Packages.dreditor.lin);\n");
         sb.append("importPackage(Packages.dreditor.gim);\n");
-        sb.append("function load(s){ return(BinFactory.load(\"").append(ID).append("\", s)); }\n");
+        sb.append("function loadScript(s){ engine.eval(new java.io.FileReader(new java.io.File(workspaceSrc, s))); }\n");
+        sb.append("function load(s){ return(BinFactory.loadBin(\"").append(ID).append("\", s)); }\n");
+        sb.append("function loadBin(s){ return(BinFactory.loadBin(\"").append(ID).append("\", s)); }\n");
         sb.append("function loadGIM(s, info){ return(BinFactory.loadGIM(\"").append(ID).append("\", s, info)); }\n\n");
         sb.append(new String(bytes, DREditor.scriptCharset));
         sb.append(String.format("%s();\n", ID));
         return(importFromJS(config, sb.toString()));
     }
     
-    public static BinBytes load(String ID, String file) throws IOException
+    public static BinBytes loadBin(String ID, String file) throws IOException
     {
         try
         {
@@ -313,6 +315,8 @@ public class BinFactory
     {
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("JavaScript");
+        engine.put("workspaceSrc", DREditor.workspaceSrc);
+        engine.put("engine", engine);
         engine.put("config", config);
         return((BinPart)engine.eval(src));
     }
