@@ -29,6 +29,9 @@ public class Config
     public String AUTHOR = "";
     public String COMMENT = "";
     
+    // Change EBOOT strings?
+    public boolean EBOOT_STRINGS = true;
+    
     public String getConfirmButton()
     {
         return(BUTTON_ORDER_SWITCHED ? "X" : "O");

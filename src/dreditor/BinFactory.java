@@ -272,7 +272,10 @@ public class BinFactory
     }
     public static BinPart importFromJSFile(Config config, int index, String file) throws IOException, ScriptException
     {
-        String ID = IOUtils.toID(index, file);
+        return(importFromJSFile(config, IOUtils.toID(index, file)));
+    }
+    public static BinPart importFromJSFile(Config config, String ID) throws IOException, ScriptException
+    {
         byte[] bytes = Files.readAllBytes(new File(DREditor.workspaceSrc, ID + ".js").toPath());
         StringBuilder sb = new StringBuilder();
         sb.append("importPackage(Packages.dreditor);\n");

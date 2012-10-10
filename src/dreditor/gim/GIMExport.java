@@ -229,6 +229,14 @@ public class GIMExport
             else
                 writeShort(out, f.fromARGB(colors, i));
         }
+        // Need to pad palette
+        for(int i = colors.length; i < info.numColors; i++)
+        {
+            if(f instanceof PaletteFormat.ABGR8888)
+                writeInt(out, 0);
+            else
+                writeShort(out, 0);
+        }
         
         // Correct end-of-section pointers
         byte[] data = out.toByteArray();

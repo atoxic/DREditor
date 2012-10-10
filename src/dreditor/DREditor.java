@@ -83,6 +83,54 @@ public class DREditor
             unpack(config, f, i);
     }
     
+    // Individual strings
+    private static final int[] EBOOT_STRINGS_LOC = new int[]{0xEF328, 0xEFED4, 0xEFF20, 0xEFF34};
+    private static final int[] EBOOT_STRINGS_LEN = new int[]{75, 75, 19, 27};
+    
+    // String sections
+    private static final int[] EBOOT_STRING_SECT_LOC = new int[]{0x1098F0, 0x109A8C, 0x109AAC};
+    private static final int[] EBOOT_STRING_SECT_LEN = new int[]{10, 7, 22};
+    
+    private static final int EBOOT_STRING_TOTAL_LEN = 43;
+    
+    public static void unpackEBOOTStrings() throws IOException
+    {
+        BinPAK pak = new BinPAK(4);
+        try(SeekableByteChannel eboot = 
+                Files.newByteChannel(new File(workspaceRaw, "EBOOT.BIN").toPath(), 
+                    StandardOpenOption.READ);
+            InputStream ebootIS = Channels.newInputStream(eboot))
+        {
+            long position;
+            ByteBuffer bb = ByteBuffer.allocate(4);;
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            
+            for(int i = 0; i < EBOOT_STRINGS_LOC.length; i++)
+            {
+                eboot.position(EBOOT_STRINGS_LOC[i]);
+                pak.add(IOUtils.getNULTerminatedString(ebootIS, scriptCharset));
+            }
+            
+            for(int i = 0; i < EBOOT_STRING_SECT_LOC.length; i++)
+            {
+                eboot.position(EBOOT_STRING_SECT_LOC[i]);
+                do
+                {
+                    eboot.read(bb);
+                    bb.flip();
+                    position = eboot.position();
+                    int ptr = bb.getInt();
+                    eboot.position(ptr >= 0x10A000 ? ptr + 0xC0 : ptr + 0xA0);
+                    bb.flip();
+                    pak.add(IOUtils.getNULTerminatedString(ebootIS, scriptCharset));
+                    eboot.position(position);
+                }
+                while(position < EBOOT_STRING_SECT_LOC[i] + 4 * EBOOT_STRING_SECT_LEN[i]);
+            }
+        }
+        BinFactory.exportToJSFile("eboot", pak);
+    }
+    
     public static void prepareEBOOT(Config config) throws IOException
     {
         Files.copy(rawEBOOT.toPath(), new File(workspaceTrans, "EBOOT.BIN").toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -91,11 +139,15 @@ public class DREditor
                     StandardOpenOption.READ, 
                     StandardOpenOption.WRITE))
         {
-            // sceImposeSetLanguageMode fix: changes home screen language and button order
-            eboot.position(0x65AC);
+            // Home/save screen language
+            eboot.position(0x1B2E0);
             eboot.write(ByteBuffer.wrap(new byte[]{
-                (byte)(config.HOME_SCREEN_LANG), (byte)0x00, (byte)0x50, (byte)0x24,
-                (byte)(config.BUTTON_ORDER_SWITCHED ? sceImpose.PSP_CONFIRM_BUTTON_CROSS : sceImpose.PSP_CONFIRM_BUTTON_CIRCLE), (byte)0x00, (byte)0x45, (byte)0x24
+                (byte)(config.HOME_SCREEN_LANG), (byte)0x00, (byte)0x02, (byte)0x24,
+            }));
+            // Set button order
+            eboot.position(0x1B3E4);
+            eboot.write(ByteBuffer.wrap(new byte[]{
+                (byte)(config.BUTTON_ORDER_SWITCHED ? sceImpose.PSP_CONFIRM_BUTTON_CROSS : sceImpose.PSP_CONFIRM_BUTTON_CIRCLE), (byte)0x00, (byte)0x02, (byte)0x24,
             }));
             if(config.BUTTON_ORDER_SWITCHED)
             {
@@ -117,6 +169,70 @@ public class DREditor
                     (byte)0x7B, (byte)0x48, (byte)0x20, (byte)0x0A  // j 0x088121EC
                 }));
             }
+            
+            if(config.EBOOT_STRINGS)
+            {
+                // Pack strings
+                // Try JS importation
+                BinPAK pak;
+                try
+                {
+                    pak = (BinPAK)BinFactory.importFromJSFile(config, "eboot");
+                }
+                catch(IOException ioe)
+                {
+                    return;
+                }
+                catch(javax.script.ScriptException e)
+                {
+                    e.printStackTrace();
+                    throw new RuntimeException("ScriptException caught in compilation of EBOOT strings.");
+                }
+
+                // Check eboot.js
+                if(pak.size() != EBOOT_STRING_TOTAL_LEN)
+                    throw new RuntimeException("Incorrect number of strings in \"eboot.js\".");
+                for(int i = 0; i < EBOOT_STRING_TOTAL_LEN; i++)
+                    if(!(pak.get(i) instanceof BinString))
+                        throw new RuntimeException("\"eboot.js\" can only have strings.");
+
+                // Write strings
+                for(int i = 0; i < EBOOT_STRINGS_LOC.length; i++)
+                {
+                    byte[] bytes = ((BinString)pak.get(i)).getString().getBytes(Constants.UTF8);
+                    if(bytes.length > EBOOT_STRINGS_LEN[i])
+                        throw new RuntimeException("String #" + (i + 1) + " in \"eboot.js\" is too long! Must be less than or equal to 75 bytes in UTF-8.");
+                    eboot.position(EBOOT_STRINGS_LOC[i]);
+                    ByteBuffer bb = ByteBuffer.allocate(EBOOT_STRINGS_LEN[i] + 1);
+                    bb.put(bytes);
+                    bb.position(0);
+                    eboot.write(bb);
+                }
+
+                // Write other strings
+                eboot.position(0x10A400);
+                long stringLoc, position;
+                int stringIndex = EBOOT_STRINGS_LOC.length;
+                for(int i = 0; i < EBOOT_STRING_SECT_LOC.length; i++)
+                {
+                    for(int j = 0; j < EBOOT_STRING_SECT_LEN[i]; j++)
+                    {
+                        stringLoc = eboot.position();
+                        byte[] bytes = ((BinString)pak.get(stringIndex)).getString().getBytes(Constants.UTF8);
+                        ByteBuffer bb = ByteBuffer.allocate(Constants.round(bytes.length + 1, 4));
+                        bb.put(bytes);
+                        bb.position(0);
+                        eboot.write(bb);
+
+                        position = eboot.position();
+                        eboot.position(EBOOT_STRING_SECT_LOC[i] + 4 * j);
+                        IOUtils.putInt(eboot, (int)stringLoc - 0xC0);
+                        eboot.position(position);
+
+                        stringIndex++;
+                    }
+                }
+            }
         }
     }
     
@@ -137,7 +253,7 @@ public class DREditor
         catch(javax.script.ScriptException e)
         {
             e.printStackTrace();
-            throw new RuntimeException("ScriptException caught in pack.");
+            throw new RuntimeException("ScriptException caught in compilation of file \"" + filename + "\".");
         }
         // Try binary file importation
         if(bytes == null)

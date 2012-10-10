@@ -120,7 +120,7 @@ public abstract class PaletteFormat
             return((p & 0xFF00FF00)          // alpha and green
                 | ((p & 0x000000FF) << 16)   // blue
                 | ((p & 0x00FF0000) >> 16)); // red 
-       }
+        }
     }
     
     public static class Index extends PaletteFormat

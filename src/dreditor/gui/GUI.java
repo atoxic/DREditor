@@ -445,6 +445,7 @@ public class GUI extends javax.swing.JFrame
         umdimage2None = new javax.swing.JButton();
         umdimage2Invert = new javax.swing.JButton();
         convertGIM = new javax.swing.JCheckBox();
+        unpackEBOOTStrings = new javax.swing.JCheckBox();
         textPVDialog = new javax.swing.JDialog();
         textPVPanel = new javax.swing.JPanel(){
             @Override
@@ -829,6 +830,8 @@ public class GUI extends javax.swing.JFrame
 
         convertGIM.setText(bundle.getString("GUI.convertGIM.text")); // NOI18N
 
+        unpackEBOOTStrings.setText(bundle.getString("GUI.unpackEBOOTStrings.text")); // NOI18N
+
         javax.swing.GroupLayout unpackFilesDialogLayout = new javax.swing.GroupLayout(unpackFilesDialog.getContentPane());
         unpackFilesDialog.getContentPane().setLayout(unpackFilesDialogLayout);
         unpackFilesDialogLayout.setHorizontalGroup(
@@ -857,10 +860,12 @@ public class GUI extends javax.swing.JFrame
                                 .addComponent(umdimage2None)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(umdimage2Invert)
-                                .addGap(0, 152, Short.MAX_VALUE))
-                            .addComponent(umdimage2Files, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(umdimage2Files)))
                     .addGroup(unpackFilesDialogLayout.createSequentialGroup()
                         .addComponent(convertGIM)
+                        .addGap(18, 18, 18)
+                        .addComponent(unpackEBOOTStrings)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(unpackButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -892,7 +897,8 @@ public class GUI extends javax.swing.JFrame
                 .addGroup(unpackFilesDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(unpackCancel)
                     .addComponent(unpackButton)
-                    .addComponent(convertGIM))
+                    .addComponent(convertGIM)
+                    .addComponent(unpackEBOOTStrings))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1360,6 +1366,8 @@ public class GUI extends javax.swing.JFrame
             {
                 try
                 {
+                    if(unpackEBOOTStrings.isSelected())
+                        DREditor.unpackEBOOTStrings();
                     for(int i = 0; i < umdimageModel.getRowCount(); i++)
                     {
                         if((Boolean)umdimageModel.getValueAt(i, 0))
@@ -1630,6 +1638,7 @@ public class GUI extends javax.swing.JFrame
     private javax.swing.JButton umdimageNone;
     private javax.swing.JButton unpackButton;
     private javax.swing.JButton unpackCancel;
+    private javax.swing.JCheckBox unpackEBOOTStrings;
     private javax.swing.JTextField unpackFileSearch;
     private javax.swing.JLabel unpackFileSearchLabel;
     private javax.swing.JDialog unpackFilesDialog;

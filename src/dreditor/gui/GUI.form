@@ -534,13 +534,15 @@
                                   <Component id="umdimage2None" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="umdimage2Invert" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="152" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
-                              <Component id="umdimage2Files" pref="0" max="32767" attributes="0"/>
+                              <Component id="umdimage2Files" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="convertGIM" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="unpackEBOOTStrings" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="unpackButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -582,6 +584,7 @@
                       <Component id="unpackCancel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="unpackButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="convertGIM" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="unpackEBOOTStrings" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -751,6 +754,13 @@
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="dreditor/gui/Bundle.properties" key="GUI.convertGIM.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="unpackEBOOTStrings">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="dreditor/gui/Bundle.properties" key="GUI.unpackEBOOTStrings.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
