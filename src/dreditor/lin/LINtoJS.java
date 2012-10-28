@@ -8,7 +8,7 @@ import dreditor.*;
  * Used for converting LINScripts to Javascript
  * @author /a/nonymous scanlations
  */
-public class LINtoJS implements InstructionListener
+public class LINtoJS implements InstructionVisitor
 {
     private LINScript lin;
     

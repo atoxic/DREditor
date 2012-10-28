@@ -62,6 +62,13 @@ public class LINScript extends IBinPAK
         return(list);
     }
     
+    public String toLines() throws LINParseException
+    {
+        LineExtractor ex = new LineExtractor(this);
+        insBin.iterate(ex);
+        return(ex.toString());
+    }
+    
     public int stringCount()
     {
         return(strings.size());

@@ -10,7 +10,7 @@ import dreditor.*;
  * BIN for containing LIN instructions
  * @author /a/nonymous scanlations
  */
-public class InstructionBin implements BinPart, InstructionListener
+public class InstructionBin implements BinPart, InstructionVisitor
 {
     // Opcodes -> number of arguments (-1 = variable arguments)
     public static final Map<Integer, Integer> NUMARGS = new HashMap<>();
@@ -100,7 +100,7 @@ public class InstructionBin implements BinPart, InstructionListener
         System.err.println("");
     }
     
-    public static void parse(ByteBuffer buf, InstructionListener listener) throws LINParseException
+    public static void parse(ByteBuffer buf, InstructionVisitor listener) throws LINParseException
     {
         while(buf.hasRemaining())
         {
@@ -140,7 +140,7 @@ public class InstructionBin implements BinPart, InstructionListener
         listener.end();
     }
     
-    public void iterate(InstructionListener listener) throws LINParseException
+    public void iterate(InstructionVisitor listener) throws LINParseException
     {
         parse(ByteBuffer.wrap(out.toByteArray()), listener);
     }
