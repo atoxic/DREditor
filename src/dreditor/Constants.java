@@ -38,7 +38,7 @@ public class Constants
         CHARACTERS.put("Kyouko Kirigiri", 0x08);
         CHARACTERS.put("Aoi Asahina", 0x09);
         CHARACTERS.put("Touko Fukawa", 0x0A);
-        CHARACTERS.put("Sakura Ookami", 0x0B);
+        CHARACTERS.put("Sakura Oogami", 0x0B);
         CHARACTERS.put("Celestia Rudenberk", 0x0C);
         CHARACTERS.put("Junko Enoshima (fake)", 0x0D);
         CHARACTERS.put("Chihiro Fujisaki", 0x0E);
