@@ -62,4 +62,14 @@ public class Constants
     {
         return((int)Math.ceil(n * 1.0 / m) * m);
     }
+    
+    public static int getCharacter(String name)
+    {
+        if(name.equals("Sakura Ookami"))
+            return(0x0B);
+        else if(name.equals("Celestia Rudenberk"))
+            return(0x0C);
+        else
+            return(CHARACTERS.get(name));
+    }
 }

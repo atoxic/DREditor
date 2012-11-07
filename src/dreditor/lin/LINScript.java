@@ -161,7 +161,7 @@ public class LINScript extends IBinPAK
      */
     public void playVoice(String speaker, int chapter, int id)
     {
-        playVoice(Constants.CHARACTERS.get(speaker), chapter, id);
+        playVoice(Constants.getCharacter(speaker), chapter, id);
     }
     
     /**
@@ -247,9 +247,9 @@ public class LINScript extends IBinPAK
     {
         Map<Integer, Integer> map = new TreeMap<>();
         for(String character : normal)
-            map.put(Constants.CHARACTERS.get(character), 0);
+            map.put(Constants.getCharacter(character), 0);
         for(String character : alt)
-            map.put(Constants.CHARACTERS.get(character), 1);
+            map.put(Constants.getCharacter(character), 1);
         for(Map.Entry<Integer, Integer> e : map.entrySet())
         {
             op(0x0F, new int[]{e.getKey(), 0x00, e.getValue()});
@@ -264,7 +264,7 @@ public class LINScript extends IBinPAK
      */
     public void updateCharacterInfo(String character, int num)
     {
-        op(0x10, new int[]{Constants.CHARACTERS.get(character), 0x00, num});
+        op(0x10, new int[]{Constants.getCharacter(character), 0x00, num});
     }
     
     /**
@@ -291,7 +291,7 @@ public class LINScript extends IBinPAK
      */
     public void showSprite(int gbuffer, String character, int id, int effect, int angle)
     {
-        op(0x1E, new int[]{gbuffer, Constants.CHARACTERS.get(character), id, effect, angle});
+        op(0x1E, new int[]{gbuffer, Constants.getCharacter(character), id, effect, angle});
     }
     
     /**
@@ -303,7 +303,7 @@ public class LINScript extends IBinPAK
      */
     public void setSpeaker(String speaker)
     {
-       setSpeaker(Constants.CHARACTERS.get(speaker));
+       setSpeaker(Constants.getCharacter(speaker));
     }
     
     /**
