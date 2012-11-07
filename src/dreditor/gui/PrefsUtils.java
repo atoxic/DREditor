@@ -11,7 +11,7 @@ import java.util.prefs.*;
  */
 public class PrefsUtils
 {
-    public static final Preferences PREFS = Preferences.userRoot().node("anonscanlations.dreditortest5");
+    public static final Preferences PREFS = Preferences.userRoot().node("anonscanlations.dreditor013");
     
     private static final HashMap<Window, String> KEYS = new HashMap<Window, String>();
 
