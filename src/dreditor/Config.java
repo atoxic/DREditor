@@ -18,7 +18,7 @@ public class Config
     
     // Which files to repack
     public boolean PACK_UMDIMAGE = true;
-    public boolean PACK_UMDIMAGE2 = true;
+    public boolean PACK_UMDIMAGE2 = false;
     
     // Convert GIM assets to PNG
     public boolean CONVERT_GIM = true;

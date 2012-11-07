@@ -311,6 +311,7 @@ public class GUI extends javax.swing.JFrame
             {
                 unpackLINFile.setEnabled(validWorkspace);
                 pack.setEnabled(validWorkspace);
+                buildISO.setEnabled(validWorkspace);
                 textPreview.setEnabled(validWorkspace);
                 
                 if(validWorkspace)
@@ -1462,11 +1463,14 @@ public class GUI extends javax.swing.JFrame
     }//GEN-LAST:event_textPVCloseActionPerformed
 
     private void workspaceChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_workspaceChooserPropertyChange
-        workspaceField.setText(workspaceChooser.getSelectedFile().getAbsolutePath());
-        DREditor.setWorkspace(workspaceChooser.getSelectedFile());
-        PrefsUtils.PREFS.put("dir", workspaceChooser.getSelectedFile().getAbsolutePath());
+        if(workspaceChooser.getSelectedFile() != null)
+        {
+            workspaceField.setText(workspaceChooser.getSelectedFile().getAbsolutePath());
+            DREditor.setWorkspace(workspaceChooser.getSelectedFile());
+            PrefsUtils.PREFS.put("dir", workspaceChooser.getSelectedFile().getAbsolutePath());
 
-        checkWorkspace();
+            checkWorkspace();
+        }
     }//GEN-LAST:event_workspaceChooserPropertyChange
 
     private void isoChooserPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_isoChooserPropertyChange
