@@ -9,6 +9,8 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import dreditor.*;
+import dreditor.font.*;
+import org.json.JSONException;
 
 /**
  *
@@ -373,6 +375,7 @@ public class GUI extends javax.swing.JFrame
 
         workspaceChooser = new javax.swing.JFileChooser();
         isoChooser = new javax.swing.JFileChooser();
+        fontDialog = new javax.swing.JFileChooser();
         confirmGroup = new javax.swing.ButtonGroup();
         convertGroup = new javax.swing.ButtonGroup();
         settingsDialog = new javax.swing.JDialog();
@@ -471,6 +474,7 @@ public class GUI extends javax.swing.JFrame
         buildISO = new javax.swing.JButton();
         toolsPanel = new javax.swing.JPanel();
         textPreview = new javax.swing.JButton();
+        changeFont = new javax.swing.JButton();
         isoLabel = new javax.swing.JLabel();
         isoField = new javax.swing.JTextField();
         isoBrowse = new javax.swing.JButton();
@@ -492,6 +496,9 @@ public class GUI extends javax.swing.JFrame
                 isoChooserPropertyChange(evt);
             }
         });
+
+        fontDialog.setDialogTitle(bundle.getString("GUI.fontDialog.dialogTitle")); // NOI18N
+        fontDialog.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("BMFont XML Font File", "fnt"));
 
         settingsDialog.setTitle(bundle.getString("GUI.settingsDialog.title")); // NOI18N
         settingsDialog.setLocationByPlatform(true);
@@ -1056,13 +1063,22 @@ public class GUI extends javax.swing.JFrame
             }
         });
 
+        changeFont.setText(bundle.getString("GUI.changeFont.text")); // NOI18N
+        changeFont.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeFontActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout toolsPanelLayout = new javax.swing.GroupLayout(toolsPanel);
         toolsPanel.setLayout(toolsPanelLayout);
         toolsPanelLayout.setHorizontalGroup(
             toolsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(toolsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(textPreview, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                .addGroup(toolsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(textPreview, javax.swing.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)
+                    .addComponent(changeFont, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         toolsPanelLayout.setVerticalGroup(
@@ -1070,6 +1086,8 @@ public class GUI extends javax.swing.JFrame
             .addGroup(toolsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(textPreview)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(changeFont)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1543,6 +1561,26 @@ public class GUI extends javax.swing.JFrame
         }
     }//GEN-LAST:event_buildISOActionPerformed
 
+    private void changeFontActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeFontActionPerformed
+        try
+        {
+            if(fontDialog.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+            {
+                DREditor.importFont(config, fontDialog.getSelectedFile());
+                setStatus("Font changed!");
+            }
+        }
+        catch(IOException|InvalidTOCException|JSONException|javax.xml.parsers.ParserConfigurationException|org.xml.sax.SAXException e)
+        {
+            setStatus(GUIUtils.BUNDLE.getString("Error.IOException"));
+            GUIUtils.error(GUIUtils.BUNDLE.getString("Error.IOException"));
+        }
+        catch(IllegalArgumentException iae)
+        {
+            setStatus(iae.getMessage());
+        }
+    }//GEN-LAST:event_changeFontActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1593,6 +1631,7 @@ public class GUI extends javax.swing.JFrame
     private javax.swing.JPanel buildPVPanel;
     private javax.swing.JCheckBox buildScreen;
     private javax.swing.JTextField buildVersion;
+    private javax.swing.JButton changeFont;
     private javax.swing.ButtonGroup confirmGroup;
     private javax.swing.JLabel confirmLabel;
     private javax.swing.JRadioButton confirmO;
@@ -1600,6 +1639,7 @@ public class GUI extends javax.swing.JFrame
     private javax.swing.JCheckBox convertGIM;
     private javax.swing.ButtonGroup convertGroup;
     private javax.swing.JLabel filesLabel;
+    private javax.swing.JFileChooser fontDialog;
     private javax.swing.JButton isoBrowse;
     private javax.swing.JFileChooser isoChooser;
     private javax.swing.JTextField isoField;

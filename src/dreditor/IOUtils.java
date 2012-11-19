@@ -86,6 +86,14 @@ public class IOUtils
         b.write(tmp);
     }
     
+    public static void putInt(OutputStream out, int i) throws IOException
+    {
+        out.write(i         & 0xFFFF);
+        out.write((i >> 8)  & 0xFFFF);
+        out.write((i >> 16) & 0xFFFF);
+        out.write((i >> 24) & 0xFFFF);
+    }
+    
     public static int getInt(SeekableByteChannel b) throws IOException
     {
         ByteBuffer tmp = ByteBuffer.allocate(4);
@@ -93,6 +101,35 @@ public class IOUtils
         tmp.flip();
         tmp.order(ByteOrder.LITTLE_ENDIAN);
         return(tmp.getInt());
+    }
+    
+    public static void putShort(SeekableByteChannel b, int i) throws IOException
+    {
+        putShort(b, i, ByteOrder.LITTLE_ENDIAN);
+    }
+    
+    public static void putShort(SeekableByteChannel b, int i, ByteOrder bo) throws IOException
+    {
+        ByteBuffer tmp = ByteBuffer.allocate(2);
+        tmp.order(bo);
+        tmp.putShort((short)i);
+        tmp.flip();
+        b.write(tmp);
+    }
+    
+    public static void putShort(OutputStream out, int i) throws IOException
+    {
+        out.write(i         & 0xFFFF);
+        out.write((i >> 8)  & 0xFFFF);
+    }
+    
+    public static int getShort(SeekableByteChannel b) throws IOException
+    {
+        ByteBuffer tmp = ByteBuffer.allocate(2);
+        b.read(tmp);
+        tmp.flip();
+        tmp.order(ByteOrder.LITTLE_ENDIAN);
+        return(tmp.getShort());
     }
     
     // String -> hex byte. May not catch some bugs

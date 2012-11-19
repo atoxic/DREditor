@@ -15,8 +15,14 @@ import jpcsp.HLE.modules150.sceImpose;
 import org.stringtemplate.v4.ST;
 import org.json.JSONException;
 
+import dreditor.font.*;
 import dreditor.gim.*;
 import dreditor.gui.*;
+
+import java.awt.image.*;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 
 /**
  *
@@ -33,6 +39,94 @@ public class DREditor
         DREditor.setWorkspace(new File(PrefsUtils.PREFS.get("dir", "")));
         
         GUIUtils.initGUI();
+    }
+    
+    public static void importFont(Config config, File font)
+            throws IOException,
+                    InvalidTOCException, JSONException,
+                    ParserConfigurationException, SAXException,
+                    IllegalArgumentException
+    {
+        File fontDir = new File(workspaceSrc, "font_pak");
+        if(!fontDir.exists())
+            unpack(config, UmdPAKFile.UMDIMAGE2, 169);
+        
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(font);
+        doc.getDocumentElement().normalize();
+        NodeList pageNodes = doc.getElementsByTagName("page");
+        if(pageNodes.getLength() != 1)
+            throw new IllegalArgumentException("Font files should only have one page!");
+        
+        File pageFile = new File(font.getParentFile(), ((Element)pageNodes.item(0)).getAttribute("file"));
+        BufferedImage img1 = ImageIO.read(pageFile);
+        BufferedImage img2 = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
+        // drawImage is bad.
+        for(int y = 0; y < img1.getHeight(); y++)
+            for(int x = 0; x < img1.getWidth(); x++)
+                img2.setRGB(x, y, img1.getRGB(x, y));
+        ImageIO.write(img2, "bmp", new File(fontDir, "000.bin"));
+        
+        NodeList charNodes = doc.getElementsByTagName("char");
+        TreeSet<Glyph> glyphs = new TreeSet<>();
+        for(int i = 0; i < charNodes.getLength(); i++)
+        {
+            Element c = (Element)charNodes.item(i);
+            Glyph g = new Glyph(Integer.parseInt(c.getAttribute("id")),
+                                Integer.parseInt(c.getAttribute("x")),
+                                Integer.parseInt(c.getAttribute("y")),
+                                Integer.parseInt(c.getAttribute("width")),
+                                Integer.parseInt(c.getAttribute("height")));
+            glyphs.add(g);
+            if(g.codepoint == 0x20)
+            {
+                Glyph blank = new Glyph(0x09, g.x, g.y, 0, g.height);
+                glyphs.add(blank);
+            }
+        }
+        
+        int index = 0;
+        int lastChar = 0;
+        ByteArrayOutputStream part2 = new ByteArrayOutputStream(),
+                            part3 = new ByteArrayOutputStream();
+        for(Glyph g : glyphs)
+        {
+            while(lastChar < g.codepoint)
+            {
+                IOUtils.putShort(part2, 0xFFFF);
+                lastChar++;
+            }
+            IOUtils.putShort(part2, index);
+            lastChar++;
+            
+            IOUtils.putShort(part3, g.codepoint);
+            IOUtils.putShort(part3, g.x);
+            IOUtils.putShort(part3, g.y);
+            IOUtils.putShort(part3, g.width);
+            IOUtils.putShort(part3, g.height);
+            IOUtils.putShort(part3, 0x0000);
+            IOUtils.putShort(part3, 0x0000);
+            IOUtils.putShort(part3, 0x08FA);
+            
+            index++;
+        }
+        
+        ByteArrayOutputStream bin = new ByteArrayOutputStream();
+        IOUtils.putInt(bin, 0x53704674);
+        IOUtils.putInt(bin, 0x00000004);
+        IOUtils.putInt(bin, index - 1);
+        IOUtils.putInt(bin, 0x20 + part2.size());
+        IOUtils.putInt(bin, lastChar - 1);
+        IOUtils.putInt(bin, 0x00000020);
+        IOUtils.putInt(bin, 0x0000002D);
+        IOUtils.putInt(bin, 0x00000001);
+        
+        part2.writeTo(bin);
+        part3.writeTo(bin);
+        while(bin.size() % 0x10 != 0)
+            IOUtils.putShort(bin, 0x0000);
+        bin.writeTo(new FileOutputStream(new File(fontDir, "001.bin")));
     }
     
     private static void jsToBin(UmdPAKFile f, int num) throws javax.script.ScriptException, IOException

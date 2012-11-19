@@ -1,4 +1,4 @@
-package dreditor;
+package dreditor.font;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -6,6 +6,8 @@ import java.io.*;
 import java.nio.*;
 import java.util.*;
 import javax.imageio.ImageIO;
+
+import dreditor.*;
 
 /**
  * Parses "font.pak" in "umdimage2.dat"
@@ -15,26 +17,11 @@ public class BitmapFont
 {
     public static BitmapFont FONT1 = null, FONT2 = null;
     
-    private class Glyph
-    {
-        int codepoint, x, y, width, height;
-        public Glyph(int _cp, int _x, int _y, int _width, int _height)
-        {
-            codepoint = _cp & 0xFFFF;
-            x = _x & 0xFFFF;
-            y = _y & 0xFFFF;
-            width = _width & 0xFFFF;
-            height = _height & 0xFFFF;
-        }
-    }
-    
     private BufferedImage img;
-    private int maxHeight;
     private HashMap<Integer, Glyph> glyphs;
     public BitmapFont(BufferedImage _img, ByteBuffer _data) throws IOException
     {
         img = _img;
-        maxHeight = 0;
         glyphs = new HashMap<>();
         
         _data.order(ByteOrder.LITTLE_ENDIAN);
@@ -45,8 +32,6 @@ public class BitmapFont
             Glyph g = new Glyph(_data.getShort(), _data.getShort(), _data.getShort(), _data.getShort(), _data.getShort());
             if(g.codepoint == 0)
                 return;
-            if(g.height > maxHeight)
-                maxHeight = g.height;
             glyphs.put(g.codepoint, g);
             _data.position(_data.position() + 6);
         }
@@ -63,7 +48,7 @@ public class BitmapFont
             if(cp == '\n')
             {
                 dx = 18;
-                dy += maxHeight;
+                dy += 25;
                 continue;
             }
             
@@ -77,7 +62,7 @@ public class BitmapFont
             if(dx + glyph.width > 480 - 18)
             {
                 dx = 18;
-                dy += maxHeight;
+                dy += 25;
             }
             g.drawImage(img, dx, dy, dx + glyph.width, dy + glyph.height,
                             glyph.x, glyph.y, glyph.x + glyph.width, glyph.y + glyph.height, null);

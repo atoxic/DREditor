@@ -192,7 +192,7 @@ public class BinFactory
         return(bb);
     }
     
-    private static BinPart parseBinPart(Config config, ByteBuffer b)
+    public static BinPart parseBinPart(Config config, ByteBuffer b)
     {
         IBinPAK pak = tryParseBinPAK(config, b);
         if(pak != null)
