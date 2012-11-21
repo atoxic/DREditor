@@ -51,9 +51,19 @@ public class DREditor
         if(!fontDir.exists())
             unpack(config, UmdPAKFile.UMDIMAGE2, 169);
         
+        String line;
+        BufferedReader read = new BufferedReader(new FileReader(font));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        while((line = read.readLine()) != null)
+        {
+            baos.write(line.getBytes("UTF-8"));
+            baos.write('\n');
+        }
+        baos.close();
+        
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(font);
+        Document doc = dBuilder.parse(new ByteArrayInputStream(baos.toByteArray()));
         doc.getDocumentElement().normalize();
         NodeList pageNodes = doc.getElementsByTagName("page");
         if(pageNodes.getLength() != 1)

@@ -1574,6 +1574,7 @@ public class GUI extends javax.swing.JFrame
         {
             setStatus(GUIUtils.BUNDLE.getString("Error.IOException"));
             GUIUtils.error(GUIUtils.BUNDLE.getString("Error.IOException"));
+            e.printStackTrace();
         }
         catch(IllegalArgumentException iae)
         {
