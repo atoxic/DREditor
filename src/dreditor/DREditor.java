@@ -71,6 +71,8 @@ public class DREditor
         
         File pageFile = new File(font.getParentFile(), ((Element)pageNodes.item(0)).getAttribute("file"));
         BufferedImage img1 = ImageIO.read(pageFile);
+        if(img1.getWidth() != 512 || img1.getHeight() != 2048)
+            throw new IllegalArgumentException("Font page must be 512x2048!");
         BufferedImage img2 = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
         // drawImage is bad.
         for(int y = 0; y < img1.getHeight(); y++)
@@ -125,9 +127,9 @@ public class DREditor
         ByteArrayOutputStream bin = new ByteArrayOutputStream();
         IOUtils.putInt(bin, 0x53704674);
         IOUtils.putInt(bin, 0x00000004);
-        IOUtils.putInt(bin, index - 1);
+        IOUtils.putInt(bin, index);
         IOUtils.putInt(bin, 0x20 + part2.size());
-        IOUtils.putInt(bin, lastChar - 1);
+        IOUtils.putInt(bin, lastChar);
         IOUtils.putInt(bin, 0x00000020);
         IOUtils.putInt(bin, 0x0000002D);
         IOUtils.putInt(bin, 0x00000001);
