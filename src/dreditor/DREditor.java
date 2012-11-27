@@ -255,6 +255,11 @@ public class DREditor
             eboot.write(ByteBuffer.wrap(new byte[]{
                 (byte)(config.BUTTON_ORDER_SWITCHED ? sceImpose.PSP_CONFIRM_BUTTON_CROSS : sceImpose.PSP_CONFIRM_BUTTON_CIRCLE), (byte)0x00, (byte)0x02, (byte)0x24,
             }));
+            // Fix typesetting
+            eboot.position(0x82EFC);
+            eboot.write(ByteBuffer.wrap(new byte[]{
+                (byte)0x18, (byte)0x00, (byte)0x17, (byte)0x24,
+            }));
             if(config.BUTTON_ORDER_SWITCHED)
             {
                 // Changes button order

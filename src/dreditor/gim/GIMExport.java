@@ -13,6 +13,9 @@ public class GIMExport
 {
     public static byte[] toGIM(BufferedImage prequantized, GIMInfo info) throws IOException
     {
+        if(info.width != prequantized.getWidth() || info.height != prequantized.getHeight())
+            throw new RuntimeException("Incorrect image dimentions in GIMInfo");
+        
         // Quantize image using octtree algorithm
         int[][] pixels = new int[prequantized.getWidth()][prequantized.getHeight()];
         int[] colors = Quantize32.quantizeImage(prequantized, info.numColors, pixels);
